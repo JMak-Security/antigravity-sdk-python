@@ -4075,6 +4075,20 @@ class LocalAgentConfigTest(absltest.TestCase):
           app_data_dir="relative/path",
       )
 
+  def test_relative_workspace_resolved_against_cwd(self):
+    config = local_connection_config.LocalAgentConfig(
+        system_instructions="test",
+        workspaces=["relative/ws"],
+    )
+    self.assertEqual(config.workspaces, [os.path.abspath("relative/ws")])
+
+  def test_absolute_workspace_left_untouched(self):
+    config = local_connection_config.LocalAgentConfig(
+        system_instructions="test",
+        workspaces=["/already/absolute/ws"],
+    )
+    self.assertEqual(config.workspaces, ["/already/absolute/ws"])
+
   def test_conversation_id_validation(self):
     # Valid ID (32 chars, alphanumeric)
     local_connection_config.LocalAgentConfig(

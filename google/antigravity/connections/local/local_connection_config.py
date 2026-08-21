@@ -117,6 +117,13 @@ class BaseLocalAgentConfig(connection.AgentConfig):
       raise ValueError(f"app_data_dir must be an absolute path, got '{v}'")
     return v
 
+  @pydantic.field_validator("workspaces")
+  def _resolve_workspaces(cls, v: list[str]) -> list[str]:  # pylint: disable=no-self-argument
+    # Relative paths must be resolved here, against the caller's cwd -- the
+    # harness resolves relative directory values against app_data_dir
+    # instead, which the caller never specified.
+    return [p if os.path.isabs(p) else os.path.abspath(p) for p in v]
+
   @pydantic.model_validator(mode="after")
   def _validate_allowed_subagents(self) -> "BaseLocalAgentConfig":
     declared_names = {
